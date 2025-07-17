@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Roblox Game Explorer</title>
@@ -10,35 +9,458 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-      body {
-        font-family: 'Inter', sans-serif;
+      body { font-family: 'Inter', sans-serif; }
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #1a1a2e; }
+      ::-webkit-scrollbar-thumb { background-color: #6366f1; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background-color: #4f46e5; }
+      @keyframes blob {
+        0% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(30px, -50px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+        100% { transform: translate(0px, 0px) scale(1); }
       }
-      /* Custom scrollbar for a better aesthetic */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1a1a2e; /* --bg-secondary */
-      }
-      ::-webkit-scrollbar-thumb {
-        background-color: #6366f1; /* --primary-color */
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background-color: #4f46e5; /* --primary-dark */
+      .animation-delay-2000 { animation-delay: 2s; }
+      .animation-delay-4000 { animation-delay: 4s; }
+      .animate-blob { animation: blob 7s infinite; }
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.1.0/",
-    "react": "https://esm.sh/react@^19.1.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.0/"
-  }
-}
-</script>
+    <!-- React and Babel Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-[#0f0f23] text-white">
+<body class="bg-[#0f0f23] text-white">
     <div id="root"></div>
-  </body>
+
+    <script type="text/babel">
+      'use strict';
+
+      // --- Constants ---
+      const GAME_CATEGORIES = [
+          "All", "Terror", "FPS", "RPG", "Ação", "Anime", "Simulação", 
+          "Competitivo", "Quebra-Cabeça", "Estratégia", "Sobrevivência", "Stealth"
+      ];
+
+      const INITIAL_GAMES = [
+          {
+              name: "DOORS",
+              description: "Jogo de terror atmosférico com entidades únicas e mecânicas inovadoras. Cada porta apresenta novos desafios.",
+              thumbnail: "https://tr.rbxcdn.com/2c993df62e2303f8c4c761477bd4a872/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/6516141723/DOORS",
+              category: ["Terror", "Quebra-Cabeça"],
+              quality_score: 10,
+              playing: 13464,
+              visits: 6667460258
+          },
+          {
+              name: "Phantom Forces",
+              description: "O padrão ouro dos jogos FPS no Roblox com armas realistas, mapas excelentes e jogabilidade competitiva.",
+              thumbnail: "https://tr.rbxcdn.com/52636c668a60c95c88c0a0117df6a525/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/292439477/Phantom-Forces",
+              category: ["FPS", "Competitivo"],
+              quality_score: 10,
+              playing: 3455,
+              visits: 1693731563
+          },
+          {
+              name: "Deepwoken",
+              description: "RPG hardcore com sistema de morte permanente, progressão profunda e construção de mundo incrível.",
+              thumbnail: "https://tr.rbxcdn.com/218d50fb943dff841de363a9e06acba9/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/4111023553/Deepwoken",
+              category: ["RPG", "Hardcore"],
+              quality_score: 10,
+              playing: 2156,
+              visits: 245678901
+          },
+          {
+              name: "The Mimic",
+              description: "Terror baseado no folclore japonês com visuais impressionantes e atmosfera aterrorizante. Múltiplos capítulos com histórias únicas.",
+              thumbnail: "https://tr.rbxcdn.com/fedcba0987654321/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/6243699076/The-Mimic",
+              category: ["Terror"],
+              quality_score: 10,
+              playing: 5678,
+              visits: 456789012
+          },
+          {
+              name: "RIVALS",
+              description: "FPS de próxima geração com gráficos incríveis e mecânicas de jogabilidade suaves.",
+              thumbnail: "https://tr.rbxcdn.com/1357924680abcdef/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/17625359962/RIVALS",
+              category: ["FPS", "Competitivo"],
+              quality_score: 10,
+              playing: 8901,
+              visits: 123456789
+          },
+          {
+              name: "Arsenal",
+              description: "FPS rápido com progressão única de armas e excelente otimização.",
+              thumbnail: "https://tr.rbxcdn.com/2468135790fedcba/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/286090429/Arsenal",
+              category: ["FPS", "Ação"],
+              quality_score: 9,
+              playing: 12345,
+              visits: 2345678901
+          },
+          {
+              name: "Entry Point",
+              description: "Jogo de assalto inspirado no Payday com mecânicas de stealth e múltiplas abordagens para missões.",
+              thumbnail: "https://tr.rbxcdn.com/9876543210abcdef/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/740581508/Entry-Point",
+              category: ["FPS", "Stealth"],
+              quality_score: 9,
+              playing: 2345,
+              visits: 345678901
+          },
+          {
+              name: "Tower of Hell",
+              description: "Plataforma desafiador com torres geradas aleatoriamente e sem pontos de salvamento.",
+              thumbnail: "https://tr.rbxcdn.com/abcd1234efgh5678/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/1962086868/Tower-of-Hell",
+              category: ["Plataforma", "Competitivo"],
+              quality_score: 9,
+              playing: 15678,
+              visits: 1234567890
+          },
+          {
+              name: "3008",
+              description: "Sobreviva em uma loja IKEA infinita. Construa bases durante o dia, sobreviva à equipe hostil à noite.",
+              thumbnail: "https://tr.rbxcdn.com/5678abcd9012efgh/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/2768379856/3008",
+              category: ["Terror", "Sobrevivência"],
+              quality_score: 9,
+              playing: 7890,
+              visits: 567890123
+          },
+          {
+              name: "Apeirophobia",
+              description: "Navegue pelos Backrooms infinitos com gráficos realistas e horror atmosférico.",
+              thumbnail: "https://tr.rbxcdn.com/0fd9d596d9c8ae0aef61af4d6ce3d3f5/150/150/Image/Webp",
+              url: "https://www.roblox.com/games/9273658706/Backrooms",
+              category: ["Terror", "Exploração"],
+              quality_score: 9,
+              playing: 4567,
+              visits: 789012345
+          },
+          {
+              name: "Bad Business",
+              description: "FPS tático com mecânicas de movimento avançadas e personalização de armas.",
+              thumbnail: "https://tr.rbxcdn.com/3233893879/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/3233893879/Bad-Business",
+              category: ["FPS", "Competitivo"],
+              quality_score: 9,
+              playing: 5432,
+              visits: 876543210
+          },
+          {
+              name: "Arcane Odyssey",
+              description: "RPG baseado em magia com gráficos bonitos e sistema inovador de criação de feitiços.",
+              thumbnail: "https://tr.rbxcdn.com/3272915504/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/3272915504/Arcane-Odyssey",
+              category: ["RPG", "Magia"],
+              quality_score: 9,
+              playing: 3210,
+              visits: 987654321
+          },
+          {
+              name: "Natural Disaster Survival",
+              description: "Jogo clássico do Roblox com vários desastres naturais e mecânicas criativas de sobrevivência.",
+              thumbnail: "https://tr.rbxcdn.com/189707/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/189707/Natural-Disaster-Survival",
+              category: ["Sobrevivência", "Clássico"],
+              quality_score: 8,
+              playing: 3456,
+              visits: 654321098
+          },
+          {
+              name: "Theme Park Tycoon 2",
+              description: "Construa e gerencie parques temáticos com opções incríveis de personalização.",
+              thumbnail: "https://tr.rbxcdn.com/69184822/512/512/Image/Webp",
+              url: "https://www.roblox.com/games/69184822/Theme-Park-Tycoon-2",
+              category: ["Simulação", "Construção"],
+              quality_score: 8,
+              playing: 7890,
+              visits: 109876543
+          }
+      ];
+
+      // --- Services ---
+      const extractPlaceId = (url) => {
+        try {
+          const match = url.match(/\/games\/(\d+)\//);
+          return match ? match[1] : null;
+        } catch (error) {
+          console.error(`Error extracting Place ID from ${url}:`, error);
+          return null;
+        }
+      };
+      const getRobloxThumbnail = async (placeId) => {
+        const robloxApiUrl = `https://thumbnails.roblox.com/v1/places/gameicons?placeIds=${placeId}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`;
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(robloxApiUrl)}`;
+        try {
+          const response = await fetch(proxyUrl);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          if (data.data && data.data.length > 0) {
+            const thumbnailData = data.data[0];
+            if (thumbnailData.state === 'Completed' && thumbnailData.imageUrl) {
+              return thumbnailData.imageUrl;
+            }
+            console.warn(`Thumbnail for placeId ${placeId} is not available. State: ${thumbnailData.state}`);
+            return null;
+          }
+          return null;
+        } catch (error) {
+          console.error(`Error fetching thumbnail for placeId ${placeId} via proxy:`, error);
+          return null;
+        }
+      };
+
+      // --- Helper Components ---
+      const SearchIcon = ({ className }) => (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={className}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+      );
+
+      const Spinner = () => (
+        <div className="flex justify-center items-center py-12">
+          <div className="w-12 h-12 border-4 border-slate-700 border-t-indigo-500 rounded-full animate-spin"></div>
+        </div>
+      );
+
+      const EmptyState = () => (
+        <div className="text-center py-16 px-8 bg-slate-800/30 rounded-lg">
+          <h3 className="text-2xl font-bold text-white mb-2">Nenhum jogo encontrado</h3>
+          <p className="text-slate-400">Tente ajustar sua pesquisa ou selecionar uma categoria diferente.</p>
+        </div>
+      );
+
+      // --- Main Components ---
+      const Header = () => (
+        <header className="text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-4 bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 text-transparent bg-clip-text">
+            Explorer Games Roblox
+          </h1>
+          <p className="max-w-3xl mx-auto text-lg text-slate-400">
+            Descubra jogos únicos e de alta qualidade do Roblox. Curadoria focada em inovação, 
+            qualidade técnica e experiências memoráveis - não apenas popularidade.
+          </p>
+        </header>
+      );
+
+      const SearchBar = ({ searchTerm, onSearchChange }) => {
+        return (
+          <div className="relative w-full max-w-lg mx-auto mb-10">
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 peer-focus:text-indigo-400 transition-colors" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Buscar jogos incríveis..."
+              className="peer w-full pl-12 pr-4 py-3 bg-slate-800/50 border-2 border-slate-700 rounded-full text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition-all duration-300 backdrop-blur-sm"
+            />
+          </div>
+        );
+      };
+
+      const CategoryFilter = ({ activeCategory, onCategoryChange }) => {
+        return (
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            {GAME_CATEGORIES.map((category) => (
+              <button
+                key={category}
+                onClick={() => onCategoryChange(category)}
+                className={`px-4 py-2 text-sm font-semibold rounded-full border-2 transition-all duration-300 ease-in-out backdrop-blur-sm
+                  ${
+                    activeCategory === category
+                      ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/30'
+                      : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700/70 hover:border-slate-500'
+                  }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        );
+      };
+
+      const formatNumber = (num) => {
+        if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(1)}B`;
+        if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+        if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+        return num.toString();
+      };
+
+      const GameCard = ({ game, index }) => {
+        const [thumbnailUrl, setThumbnailUrl] = React.useState(game.thumbnail);
+        const [hasError, setHasError] = React.useState(false);
+        const fallbackThumbnail = `https://picsum.photos/seed/${game.name}/512/512`;
+
+        React.useEffect(() => {
+          let isMounted = true;
+          const fetchThumbnail = async () => {
+            const placeId = extractPlaceId(game.url);
+            if (placeId) {
+              const newThumbnail = await getRobloxThumbnail(placeId);
+              if (isMounted && newThumbnail) {
+                setThumbnailUrl(newThumbnail);
+              }
+            }
+          };
+          fetchThumbnail();
+          return () => { isMounted = false; };
+        }, [game.url]);
+
+        const handleImageError = () => {
+          if (!hasError) {
+            setThumbnailUrl(fallbackThumbnail);
+            setHasError(true);
+          }
+        };
+
+        return (
+          <a
+            href={game.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group block bg-slate-800/50 border border-slate-700 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-900/50 hover:border-indigo-600 backdrop-blur-sm"
+            style={{ animation: `fadeInUp 0.5s ${index * 0.05}s ease-out backwards` }}
+          >
+            <div className="relative h-48 overflow-hidden">
+              <img
+                src={thumbnailUrl}
+                alt={`Thumbnail for ${game.name}`}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                onError={handleImageError}
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+              <div className="absolute top-3 right-3 flex flex-col gap-2">
+                {game.playing > 0 && (
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-white bg-black/60 px-2 py-1 rounded-full backdrop-blur-sm">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    {formatNumber(game.playing)}
+                  </div>
+                )}
+                {game.visits > 0 && (
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-white bg-black/60 px-2 py-1 rounded-full backdrop-blur-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" /></svg>
+                    {formatNumber(game.visits)}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="p-5">
+              <h3 className="text-xl font-bold text-white truncate mb-2 group-hover:text-indigo-400 transition-colors">
+                {game.name}
+              </h3>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {game.category.slice(0, 3).map((cat) => (
+                  <span key={cat} className="px-2.5 py-0.5 text-xs font-semibold text-indigo-300 bg-indigo-500/20 rounded-full">
+                    {cat}
+                  </span>
+                ))}
+              </div>
+              <p className="text-sm text-slate-400 h-20 overflow-hidden [display:-webkit-box] [-webkit-line-clamp:4] [-webkit-box-orient:vertical]">
+                {game.description}
+              </p>
+            </div>
+          </a>
+        );
+      };
+
+      const AnimatedBackground = () => (
+        <div className="fixed inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-600/50 rounded-full filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute top-0 -right-4 w-96 h-96 bg-indigo-600/50 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-20 w-96 h-96 bg-pink-600/50 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        </div>
+      );
+
+      const App = () => {
+        const [games, setGames] = React.useState(INITIAL_GAMES);
+        const [searchTerm, setSearchTerm] = React.useState('');
+        const [activeCategory, setActiveCategory] = React.useState('All');
+        const [isLoading, setIsLoading] = React.useState(true);
+
+        React.useEffect(() => {
+          const timer = setTimeout(() => setIsLoading(false), 500);
+          return () => clearTimeout(timer);
+        }, []);
+
+        const filteredGames = React.useMemo(() => {
+          return games
+            .filter((game) => {
+              const matchesCategory = activeCategory === 'All' || game.category.includes(activeCategory);
+              const matchesSearch =
+                searchTerm.trim() === '' ||
+                game.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                game.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                game.category.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()));
+              return matchesCategory && matchesSearch;
+            })
+            .sort((a, b) => b.quality_score - a.quality_score || a.name.localeCompare(b.name));
+        }, [games, searchTerm, activeCategory]);
+        
+        return (
+          <React.Fragment>
+            <AnimatedBackground />
+            <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
+              <Header />
+              <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+              <CategoryFilter activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
+              
+              {isLoading ? (
+                <Spinner />
+              ) : (
+                <React.Fragment>
+                  {filteredGames.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                      {filteredGames.map((game, index) => (
+                        <GameCard key={`${game.name}-${game.url}`} game={game} index={index} />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState />
+                  )}
+                </React.Fragment>
+              )}
+            </main>
+          </React.Fragment>
+        );
+      };
+
+      // --- Mount the App ---
+      const rootElement = document.getElementById('root');
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      );
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
 </html>
